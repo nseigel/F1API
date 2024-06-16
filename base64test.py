@@ -6,7 +6,6 @@ from turtle import *
 import requests
 
 
-# Get CarData stream
 url = 'http://livetiming.formula1.com/static/2024/' \
       '2024-03-02_Bahrain_Grand_Prix/2024-03-02_Race/' \
       'Position.z.jsonStream'
@@ -15,7 +14,6 @@ x_data = []
 y_data = []
 
 for i in range(1000,1200):
-      # Pick one row from the stream
       random_row = resp.text.split('\r\n')[i]
       timing, data, _ = random_row.split('"')
       decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
@@ -23,13 +21,6 @@ for i in range(1000,1200):
       max_data = decoded_data["Position"][0]["Entries"]["1"]
       x_data.append(max_data['X'])
       y_data.append(max_data['Y'])
-
-      #print(timing)
-      #print(len(decoded_data['Position']))
-      # 00:00:14.071
-      #print(decoded_data["Position"][0]["Entries"]["1"])
-      # b'{"Entries":[{"Utc":"2021-04-18T12:30:13.1298098Z","Cars":{"3":{"Channels":
-      # ...
 
 x_min = min(x_data)
 x_max = max(x_data)
