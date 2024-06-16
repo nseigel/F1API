@@ -5,12 +5,10 @@ from turtle import *
 
 import requests
 
-url = 'http://livetiming.formula1.com/static/2024/' \
-      '2024-03-02_Bahrain_Grand_Prix/2024-03-02_Race/' \
+url = 'http://livetiming.formula1.com/static/2023/' \
+      '2023-05-28_Monaco_Grand_Prix/2023-05-28_Race/' \
       'Position.z.jsonStream'
 resp = requests.get(url)
-x_data = []
-y_data = []
 
 def normalize(data):
     data_length = len(data)
@@ -23,7 +21,10 @@ def normalize(data):
         for i in range(data_length):
             data[i] = data[i] + correction_factor
     for i in range(data_length):
-        data[i] = data[i]/data_range
+        if data_range == 0:
+            data[i] = 0
+        else:
+            data[i] = data[i]/data_range
     return data
 
 def scale(data, factor):
@@ -31,31 +32,41 @@ def scale(data, factor):
         data[i] = data[i] * factor
     return data
 
+def get_driver_data(driver_number, start_index, end_index, factor):
+    x_data = []
+    y_data = []
+    for i in range(start_index,end_index):
+        random_row = resp.text.split('\r\n')[i]
+        timing, data, _ = random_row.split('"')
+        decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
+        decoded_data = json.loads(decoded_data)
+        max_data = decoded_data["Position"][0]["Entries"][str(driver_number)]
+        x_data.append(max_data['X'])
+        y_data.append(max_data['Y'])
+    x_data_processed = scale(normalize(x_data), factor)
+    y_data_processed = scale(normalize(y_data), factor)
+    return(x_data_processed, y_data_processed)
 
-for i in range(1000,1200):
-      random_row = resp.text.split('\r\n')[i]
-      timing, data, _ = random_row.split('"')
-      decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
-      decoded_data = json.loads(decoded_data)
-      max_data = decoded_data["Position"][0]["Entries"]["1"]
-      x_data.append(max_data['X'])
-      y_data.append(max_data['Y'])
+def draw_segment(x_data, y_data, colour):
+    t.color(colour)
+    t.penup()
+    t.goto(x_data[0], y_data[0])
+    t.pendown()
 
-#print(x_data)
-x_data_processed = scale(normalize(x_data), 200)
-y_data_processed = scale(normalize(y_data), 200)
-#print(x_data_normalized)
+    for i in range(len(x_data)):
+        t.goto(x_data[i], y_data[i])
+    t.penup()
+
+lewis_x, lewis_y = get_driver_data(44, 5000, 5130, 300)
+bottas_x, bottas_y = get_driver_data(77, 5000, 5130, 300)
+lando_x, lando_y = get_driver_data(4, 5000, 5130, 300)
 
 screen = Screen()
-
 screen.screensize(50, 50)
-
 t = Turtle()
-t.penup()
-t.goto(x_data_processed[0], y_data_processed[0])
-t.pendown()
 
-for i in range(len(x_data_processed)):
-    t.goto(x_data_processed[i], y_data_processed[i])
+draw_segment(lewis_x, lewis_y, "blue")
+draw_segment(bottas_x, bottas_y, "black")
+draw_segment(lando_x, lando_y, "orange")
 
 screen.exitonclick()
