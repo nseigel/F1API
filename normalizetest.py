@@ -5,19 +5,24 @@ from turtle import *
 
 import requests
 
-url = 'http://livetiming.formula1.com/static/2023/' \
-      '2023-05-28_Monaco_Grand_Prix/2023-05-28_Race/' \
+url = 'http://livetiming.formula1.com/static/2024/' \
+      '2024-06-09_Canadian_Grand_Prix/2024-06-09_Race/' \
       'Position.z.jsonStream'
 resp = requests.get(url)
 
-def normalize(data):
+def min_max_value(x_data, y_data):
+    mins = [min(x_data), min(y_data)]
+    abs_min = min(mins)
+    maxes = [max(x_data), max(y_data)]
+    abs_max = max(maxes)
+    return(abs_min, abs_max)
+
+def normalize(data, abs_min, abs_max):
     data_length = len(data)
-    min_value = min(data)
-    max_value = max(data)
-    negative_values = min_value < 0
-    data_range = max_value - min_value
+    negative_values = abs_min < 0
+    data_range = abs_max - abs_min
     if negative_values:
-        correction_factor = abs(min_value)
+        correction_factor = abs(abs_min)
         for i in range(data_length):
             data[i] = data[i] + correction_factor
     for i in range(data_length):
@@ -43,8 +48,9 @@ def get_driver_data(driver_number, start_index, end_index, factor):
         max_data = decoded_data["Position"][0]["Entries"][str(driver_number)]
         x_data.append(max_data['X'])
         y_data.append(max_data['Y'])
-    x_data_processed = scale(normalize(x_data), factor)
-    y_data_processed = scale(normalize(y_data), factor)
+    abs_min, abs_max = min_max_value(x_data, y_data)
+    x_data_processed = scale(normalize(x_data, abs_min, abs_max), factor)
+    y_data_processed = scale(normalize(y_data, abs_min, abs_max), factor)
     return(x_data_processed, y_data_processed)
 
 def draw_segment(x_data, y_data, colour):
@@ -57,16 +63,24 @@ def draw_segment(x_data, y_data, colour):
         t.goto(x_data[i], y_data[i])
     t.penup()
 
-lewis_x, lewis_y = get_driver_data(44, 5000, 5130, 300)
-bottas_x, bottas_y = get_driver_data(77, 5000, 5130, 300)
-lando_x, lando_y = get_driver_data(4, 5000, 5130, 300)
+carlos_x, carlos_y = get_driver_data(55, 5000, 5130, 300)
+alex_x, alex_y = get_driver_data(23, 5000, 5130, 300)
+#lando_x, lando_y = get_driver_data(4, 5000, 5130, 50)
 
 screen = Screen()
 screen.screensize(50, 50)
 t = Turtle()
 
-draw_segment(lewis_x, lewis_y, "blue")
-draw_segment(bottas_x, bottas_y, "black")
-draw_segment(lando_x, lando_y, "orange")
+draw_segment(carlos_x, carlos_y, "red")
+draw_segment(alex_x, alex_y, "blue")
+#draw_segment(lando_x, lando_y, "orange")
+
+t.goto(0,0)
+t.color('black')
+t.pendown()
+for i in range(4):
+    t.forward(300)
+    t.left(90)
+
 
 screen.exitonclick()
