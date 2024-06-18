@@ -53,34 +53,24 @@ def get_driver_data(driver_number, start_index, end_index, factor):
     y_data_processed = scale(normalize(y_data, abs_min, abs_max), factor)
     return(x_data_processed, y_data_processed)
 
-def draw_segment(x_data, y_data, colour):
+def draw_segment(start_time, end_time, driver_number, scale, colour, vizualize):
+    driver_x, driver_y = get_driver_data(driver_number, start_time, end_time, scale)
     t.color(colour)
     t.penup()
-    t.goto(x_data[0], y_data[0])
+    t.goto(driver_x[0], driver_y[0])
     t.pendown()
 
-    for i in range(len(x_data)):
-        t.goto(x_data[i], y_data[i])
+    for i in range(len(driver_x)):
+        t.goto(driver_x[i], driver_y[i])
     t.penup()
-
-carlos_x, carlos_y = get_driver_data(55, 5000, 5130, 300)
-alex_x, alex_y = get_driver_data(23, 5000, 5130, 300)
-#lando_x, lando_y = get_driver_data(4, 5000, 5130, 50)
+    if visualize:
+        t.goto(driver_x[0], driver_y[0])
+        t.shape(circle)
 
 screen = Screen()
 screen.screensize(50, 50)
 t = Turtle()
 
-draw_segment(carlos_x, carlos_y, "red")
-draw_segment(alex_x, alex_y, "blue")
-#draw_segment(lando_x, lando_y, "orange")
-
-t.goto(0,0)
-t.color('black')
-t.pendown()
-for i in range(4):
-    t.forward(300)
-    t.left(90)
-
+draw_segment(5000, 5130, 55, 300, "red", False)
 
 screen.exitonclick()
