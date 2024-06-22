@@ -53,15 +53,16 @@ def get_driver_data(driver_number, start_index, end_index, factor):
     y_data = []
     timestamps = []
     for i in range(start_index,end_index):
-        random_row = resp.text.split('\r\n')[i]
-        timing, data, _ = random_row.split('"')
+        row = resp.text.split('\r\n')[i]
+        timing, data, _ = row.split('"')
         decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
         decoded_data = json.loads(decoded_data)
-        timestamp = convert_time(decoded_data["Position"][0]["Timestamp"])
-        timestamps.append(timestamp)
-        driver_data = decoded_data["Position"][0]["Entries"][str(driver_number)]
-        x_data.append(driver_data['X'])
-        y_data.append(driver_data['Y'])
+        for x in range(len(decoded_data["Position"])):
+            timestamp = convert_time(decoded_data["Position"][x]["Timestamp"])
+            timestamps.append(timestamp)
+            driver_data = decoded_data["Position"][x]["Entries"][str(driver_number)]
+            x_data.append(driver_data['X'])
+            y_data.append(driver_data['Y'])
     abs_min, abs_max = min_max_value(x_data, y_data)
     x_data_processed = scale(normalize(x_data, abs_min, abs_max), factor)
     y_data_processed = scale(normalize(y_data, abs_min, abs_max), factor)
@@ -95,6 +96,6 @@ screen.screensize(50, 50)
 t = Turtle()
 
 #draw_segment(5000, 5130, 55, 300, "red", False)
-draw_segment(5000, 5115, 44, 300, "red", True)
+draw_segment(5000, 5130, 44, 300, "red", True)
 
 screen.exitonclick()
