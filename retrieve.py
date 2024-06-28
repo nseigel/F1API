@@ -3,6 +3,8 @@ import zlib
 import json
 import datetime
 import requests
+import locationid as l
+import codecs
 
 def convert_time(timestamp):
     timestamp = timestamp[0:26]
@@ -30,3 +32,23 @@ def get_position_data(driver_number, start_index, end_index, url):
             x_data.append(driver_data['X'])
             y_data.append(driver_data['Y'])
     return(x_data, y_data, timestamps)
+
+def find_meeting(circuit, year):
+      url = 'http://livetiming.formula1.com/static/' + str(year) + '/Index.json'
+      resp = requests.get(url)
+      resp = json.loads(codecs.decode(resp.content, encoding='utf-8-sig'))
+      key = l.circuits[circuit]
+      meeting = {}
+      for meet in resp['Meetings']:
+            if meet["Code"] == key:
+                  meeting = meet
+      return meeting
+
+def find_session(session, circuit, year):
+      meeting = find_meeting(circuit, year)
+      path = 'https://livetiming.formula1.com/static/'
+      for sess in meeting["Sessions"]:
+            if sess["Name"] == session:
+                  path += sess["Path"]
+                  path += 'Index.json'
+      return path
