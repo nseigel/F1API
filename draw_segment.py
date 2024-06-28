@@ -6,10 +6,6 @@ import retrieve as r
 
 import requests
 
-url = 'http://livetiming.formula1.com/static/2024/' \
-      '2024-05-26_Monaco_Grand_Prix/2024-05-26_Race/' \
-      'Position.z.jsonStream'
-
 def visualize_segment(driver_x, driver_y, timestamps):
     t.goto(driver_x[0], driver_y[0])
     prev_timestamp = 0
@@ -22,8 +18,8 @@ def visualize_segment(driver_x, driver_y, timestamps):
         t.goto(driver_x[i], driver_y[i])
         prev_timestamp = timestamp
 
-def draw_segment(start_time, end_time, driver_number, factor, colour, visualize):
-    driver_x, driver_y, timestamps = r.get_position_data(driver_number, start_time, end_time, url)
+def draw_segment(year, circuit, session, start_time, end_time, driver_number, factor, colour, visualize):
+    driver_x, driver_y, timestamps = r.get_position_data(year, circuit, session, driver_number, start_time, end_time)
     processed_data = n.normalize([driver_x, driver_y], factor)
     driver_x = processed_data[0]
     driver_y = processed_data[1]
@@ -43,6 +39,6 @@ screen.screensize(50, 50)
 t = Turtle()
 
 #draw_segment(5000, 5130, 55, 300, "red", False)
-draw_segment(3100, 3120, 44, 300, "red", True)
+draw_segment(2024, 'Catalunya', 'Race', 5000, 5200, 44, 300, "red", False)
 
 screen.exitonclick()

@@ -15,7 +15,8 @@ def convert_time(timestamp):
     time = datetime.datetime.fromisoformat(timestamp)
     return time
 
-def get_position_data(driver_number, start_index, end_index, url):
+def get_position_data(year, circuit, session, driver_number, start_index, end_index):
+    url = find_session(session, circuit, year) + 'Position.z.jsonStream'
     resp = requests.get(url)
     x_data = []
     y_data = []
@@ -50,5 +51,4 @@ def find_session(session, circuit, year):
       for sess in meeting["Sessions"]:
             if sess["Name"] == session:
                   path += sess["Path"]
-                  path += 'Index.json'
       return path
