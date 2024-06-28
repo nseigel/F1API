@@ -68,6 +68,6 @@ screen.screensize(50, 50)
 t = Turtle()
 
 #draw_segment(5000, 5130, 55, 300, "red", False)
-draw_segment(3100, 3200, 44, 300, "red", True)
+draw_segment(3100, 3200, 44, 300, "red", False)
 
 screen.exitonclick()
