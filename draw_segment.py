@@ -7,8 +7,8 @@ import time
 
 import requests
 
-url = 'http://livetiming.formula1.com/static/2023/' \
-      '2023-07-30_Belgian_Grand_Prix/2023-07-30_Race/' \
+url = 'http://livetiming.formula1.com/static/2024/' \
+      '2024-05-26_Monaco_Grand_Prix/2024-05-26_Race/' \
       'Position.z.jsonStream'
 resp = requests.get(url)
 
@@ -96,6 +96,6 @@ screen.screensize(50, 50)
 t = Turtle()
 
 #draw_segment(5000, 5130, 55, 300, "red", False)
-draw_segment(5000, 5130, 44, 300, "red", True)
+draw_segment(3100, 3200, 44, 300, "red", True)
 
 screen.exitonclick()
