@@ -1,6 +1,3 @@
-import base64
-import zlib
-import json
 from turtle import *
 import datetime
 import time
