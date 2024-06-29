@@ -10,6 +10,6 @@ t = Turtle()
 segment.draw_segment(2023, 'Spielberg', 'Race', 6000, 6070, 1, 300, "purple", False, t)
 t.hideturtle()
 
-live.display_drivers('Practice 1', 'Spielberg', 2024, [["HAM", 'red'], ["VER", 'blue']], 0.5, 300)
+live.display_drivers('Qualifying', 'Spielberg', 2024, [["HAM", 'red'], ["VER", 'blue']], 0.5, 300)
 
-screen.exitonclick()
+#screen.exitonclick()
