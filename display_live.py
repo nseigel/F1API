@@ -24,7 +24,7 @@ def display_drivers(session, circuit, year, drivers, interval, factor):
     for driver in drivers:
         driver.append(0)
         driver.append(0)
-    for i in range(10):
+    while True:
         drivers = driver_positions(session, circuit, year, drivers, factor)
         for driver in drivers:
             driver[2].goto(driver[3], driver[4])

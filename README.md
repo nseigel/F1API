@@ -6,3 +6,4 @@ Next Steps
 - figure out when laps start/end
 - store data locally (parquet file?)
 - display data live
+- look into live data (SignalR) https://livetiming.formula1.com/signalr
