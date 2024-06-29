@@ -3,7 +3,7 @@ import zlib
 import json
 import datetime
 import requests
-import locationid as l
+import info as l
 import codecs
 
 def convert_time(timestamp):
@@ -53,8 +53,11 @@ def find_session(session, circuit, year):
       meeting = find_meeting(circuit, year)
       path = 'https://livetiming.formula1.com/static/'
       for sess in meeting["Sessions"]:
-            if sess["Name"] == session:
-                  path += sess["Path"]
+            try:
+                  if sess["Name"] == session:
+                        path += sess["Path"]
+            except KeyError:
+                  print('KeyError')
       return path
 
 def get_live_positions(session, circuit, year):
@@ -64,12 +67,9 @@ def get_live_positions(session, circuit, year):
       latest_position = decode64(resp, len(rows) - 2)[1]
       positions = latest_position['Position']
       index = len(positions) - 1
-      print(index)
       data = {}
       for driver in l.drivers:
             x_data = positions[index]['Entries'][l.drivers[driver]]['X']
             y_data = positions[index]['Entries'][l.drivers[driver]]['Y']
             data[driver] = [x_data, y_data]
       return data
-
-print(get_live_positions("Race", "Spa-Francorchamps", 2023))

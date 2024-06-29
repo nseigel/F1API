@@ -15,6 +15,10 @@ def scale(data, factor):
 
 def normalize(data, factor):
     abs_min, abs_max = min_max_value(data)
+    ##
+    print(abs_min)
+    print(abs_max)
+    ##
     negative_values = abs_min < 0
     data_range = abs_max - abs_min
     correction_factor = abs(abs_min)
@@ -29,3 +33,19 @@ def normalize(data, factor):
                 group[i] = group[i]/data_range
     data = scale(data, factor)
     return data
+
+def normalize_live(data, factor, abs_min, abs_max):
+    negative_values = abs_min < 0
+    data_range = abs_max - abs_min
+    correction_factor = abs(abs_min)
+    for group in data:
+        if negative_values:
+            for i in range(len(group)):
+                group[i] += correction_factor
+        for i in range(len(group)):
+            if data_range == 0:
+                group[i] = 0
+            else:
+                group[i] = group[i]/data_range
+    data = scale(data, factor)
+    return data 

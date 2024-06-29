@@ -47,3 +47,28 @@ drivers = {
 }
 
 drivers_list = ["VER", "PER", 'SAI', 'LEC', 'NOR', 'PIA', 'HAM', 'RUS', 'ALO', 'STR', 'HUL', 'MAG', 'OCO', 'GAS', 'TSU', 'RIC', 'BOT', 'ZHO', 'ALB', 'SAR']
+
+circuit_min_max = {
+    'Sakhir' : [-3500, 8346],
+    'Jeddah' : [-5795, 21797],
+    'Melbourne' : [-7211, 11852],
+    'Baku' : [-16908, 3724],
+    'Miami' : [-4794, 10566],
+    'Monte Carlo' : [-9773, -168],
+    'Catalunya' : [-7455, 4140],
+    'Montreal' : [-2499, 16760],
+    'Spielberg' : [-8234, 5680],
+    'Silverstone' : [-4116, 13114],
+    'Hungaroring' : [-6085, 10557],
+    'Spa-Francorchamps' : [-15770, 8313],
+    'Zandvoort' : [-1604, 8702],
+    'Monza' : [-5802, 15882],
+    'Singapore' : [-13201, 4090],
+    'Suzuka' : [-13706, 6051],
+    'Lusail' : [-4617, 10056],
+    'Austin' : [-4074, 15582],
+    'Mexico City' : [-9042, 12014],
+    'Interlagos' : [-8519, 2405],
+    'Las Vegas' : [-7734, 17773],
+    'Yas Marina Circuit' : [-5345, 11774],
+}
