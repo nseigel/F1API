@@ -22,3 +22,28 @@ circuits = {
     'Las Vegas' : 'USA1501',
     'Yas Marina Circuit' : 'UAE0103',
     }
+
+drivers = {
+    'VER' : '1',
+    'PER' : '11',
+    'SAI' : '55',
+    'LEC' : '16',
+    'NOR' : '4',
+    'PIA' : '81',
+    'HAM' : '44',
+    'RUS' : '63',
+    'ALO' : '14',
+    'STR' : '18',
+    'HUL' : '27',
+    'MAG' : '20',
+    'OCO' : '31',
+    'GAS' : '10',
+    'TSU' : '22',
+    'RIC' : '3',
+    'BOT' : '77',
+    'ZHO' : '24',
+    'ALB' : '23',
+    'SAR' : '2',
+}
+
+drivers_list = ["VER", "PER", 'SAI', 'LEC', 'NOR', 'PIA', 'HAM', 'RUS', 'ALO', 'STR', 'HUL', 'MAG', 'OCO', 'GAS', 'TSU', 'RIC', 'BOT', 'ZHO', 'ALB', 'SAR']

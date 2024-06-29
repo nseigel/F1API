@@ -15,6 +15,13 @@ def convert_time(timestamp):
     time = datetime.datetime.fromisoformat(timestamp)
     return time
 
+def decode64(resp, index):
+    row = resp.text.split('\r\n')[index]
+    timing, data, _ = row.split('"')
+    decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
+    decoded_data = json.loads(decoded_data)
+    return(timing, decoded_data)
+
 def get_position_data(year, circuit, session, driver_number, start_index, end_index):
     url = find_session(session, circuit, year) + 'Position.z.jsonStream'
     resp = requests.get(url)
@@ -22,10 +29,7 @@ def get_position_data(year, circuit, session, driver_number, start_index, end_in
     y_data = []
     timestamps = []
     for i in range(start_index,end_index):
-        row = resp.text.split('\r\n')[i]
-        timing, data, _ = row.split('"')
-        decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
-        decoded_data = json.loads(decoded_data)
+        decoded_data = decode64(resp, i)[1]
         for x in range(len(decoded_data["Position"])):
             timestamp = convert_time(decoded_data["Position"][x]["Timestamp"])
             timestamps.append(timestamp)
@@ -52,3 +56,20 @@ def find_session(session, circuit, year):
             if sess["Name"] == session:
                   path += sess["Path"]
       return path
+
+def get_live_positions(session, circuit, year):
+      url = find_session(session, circuit, year) + 'Position.z.jsonStream'
+      resp = requests.get(url)
+      rows = resp.text.split('\r\n')
+      latest_position = decode64(resp, len(rows) - 2)[1]
+      positions = latest_position['Position']
+      index = len(positions) - 1
+      print(index)
+      data = {}
+      for driver in l.drivers:
+            x_data = positions[index]['Entries'][l.drivers[driver]]['X']
+            y_data = positions[index]['Entries'][l.drivers[driver]]['Y']
+            data[driver] = [x_data, y_data]
+      return data
+
+print(get_live_positions("Race", "Spa-Francorchamps", 2023))

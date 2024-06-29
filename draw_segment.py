@@ -39,6 +39,6 @@ screen.screensize(50, 50)
 t = Turtle()
 
 #draw_segment(5000, 5130, 55, 300, "red", False)
-draw_segment(2024, 'Catalunya', 'Race', 5000, 5200, 44, 300, "red", False)
+draw_segment(2023, 'Spa-Francorchamps', 'Sprint', 1000, 1100, 44, 300, "red", False)
 
 screen.exitonclick()
