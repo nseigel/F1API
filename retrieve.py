@@ -59,17 +59,3 @@ def find_session(session, circuit, year):
             except KeyError:
                   print('KeyError')
       return path
-
-def get_live_positions(session, circuit, year):
-      url = find_session(session, circuit, year) + 'Position.z.jsonStream'
-      resp = requests.get(url)
-      rows = resp.text.split('\r\n')
-      latest_position = decode64(resp, len(rows) - 2)[1]
-      positions = latest_position['Position']
-      index = len(positions) - 1
-      data = {}
-      for driver in l.drivers:
-            x_data = positions[index]['Entries'][l.drivers[driver]]['X']
-            y_data = positions[index]['Entries'][l.drivers[driver]]['Y']
-            data[driver] = [x_data, y_data]
-      return data
