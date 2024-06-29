@@ -1,5 +1,4 @@
 import display_segment as segment
-import display_live as live
 from turtle import *
 
 screen = Screen()

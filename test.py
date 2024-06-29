@@ -3,6 +3,8 @@ import json
 import codecs
 import datetime
 import zlib
+import retrieve as r
+import base64
 
 # #testing requests
 # URL = "https://livetiming.formula1.com/static/"
@@ -19,12 +21,16 @@ import zlib
 # print(date)
 
 #testing different data streams
-url = 'http://livetiming.formula1.com/static/2024/' \
-      '2024-03-02_Bahrain_Grand_Prix/2024-03-02_Race/' \
-      'SessionData.jsonStream'
+url = r.find_session("Race", "Spa-Francorchamps", 2023) + 'PitLaneTimeCollection.jsonStream'
 
 resp = requests.get(url)
 print(resp.text)
+
+# print(r.decode64(resp, 1000))
+# print(url)
+
+# data = '7ed89990eb2a4d39870ff19793519937'
+# decoded_data = zlib.decompress(base64.b64decode(data), -zlib.MAX_WBITS)
 
 #row = resp.text.split('\r\n')[20]
 #print(row)

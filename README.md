@@ -7,3 +7,4 @@ Next Steps
 - store data locally (parquet file?)
 - display data live
 - look into live data (SignalR) https://livetiming.formula1.com/signalr
+- analysing if teams have code words in the team radio messages

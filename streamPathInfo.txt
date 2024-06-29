@@ -1,0 +1,102 @@
+SessionInfo.jsonStream:
+- info about track name, grand prix name, etc.
+
+ArchiveStatus.jsonStream:
+- status (ex. Generating)
+
+ContentStreams.jsonStream:
+- info about commentary and live streams
+
+TrackStatus.jsonStream:
+- timestamp from 0 point with flag status
+
+SessionData.jsonStream:
+- track status and timestamps for start of each lap (only for race), timestamps for each part of qualifying
+
+AudioStreams.jsonStream:
+- info about audio, commentary stream
+
+LapCount.jsonStream:
+- timestamp and corresponding lap (only for race)
+
+DriverRaceInfo.jsonStream:
+- timestamp starting from 0 point
+- accompanied by either overtake state or gaps and interval
+- only for race
+
+ChampionshipPrediction.jsonStream:
+- timestamps starting from 0 point
+- prediction of points received by drivers and teams at different timestamps
+- only for race
+
+ExtrapolatedClock.jsonStream:
+- when different sessions, when race starts
+
+Position.z.jsonStream:
+- x, y, z of each car with timestamps
+-base64 encoded
+
+CarData.z.jsonStream:
+- different timestamps with "channels" with different values
+- maybe braking, throttle data?
+- base64 encoded
+
+DriverList.jsonStream:
+- timestamps starting from 0 point
+- each driver references a line - position in race (line for graphics)
+
+TimingDataF1.jsonStream:
+- sectors, segments, status, sometimes speed, interval values
+- with timestamps starting from 0 point
+
+TopThree.jsonStream:
+- top three referenced as 0, 1, 2
+- displays, gap to leader, gap to ahead, when leader starts a lap
+- timestamps starting from 0 point
+
+TimingAppData.jsonStream:
+- stint, totallaps data
+- compound data when pit stop
+- timestamps starting from 0 point
+- only for race
+
+LapSeries.jsonStream:
+- time when new lap starts and position 
+- timestamps starting from 0 point
+
+TimingData.jsonStream:
+- very similar to TimingDataF1.jsonStream
+
+TimingStats.jsonStream:
+- personal bests (lap times, sectors), speed traps, 
+
+SessionStatus.jsonStream:
+- when session officially starts, ends
+- timestamps starting from 0 point
+
+TyreStintSeries.jsonStream:
+- very similar to TimingAppData.jsonStream
+
+Heartbeat.jsonStream:
+- timestamps starting from 0 tied to utc time
+
+WeatherData.jsonStream:
+- air temp, track temp, wind direction, humidity, rainfall
+
+WeatherDataSeries.jsonStream:
+- same thing as WeatherData.jsonStream with utc timmestamps added
+
+TeamRadio.jsonStream:
+- access team radio mp3 with timestamps attached
+
+TlaRcm.jsonStream:
+- race control messages with timestamp
+
+RaceControlMessages.jsonStream:
+- same as TLaRcm.jsonStream with flags and scope added
+
+CurrentTyres.jsonStream:
+- current tyre compound (changed when pit stop?)
+
+PitLaneTimeCollection.jsonStream:
+- time in pit lane
