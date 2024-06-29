@@ -21,10 +21,11 @@ import base64
 # print(date)
 
 #testing different data streams
-url = r.find_session("Race", "Spa-Francorchamps", 2023) + 'PitLaneTimeCollection.jsonStream'
-
+url = r.find_session("Race", "Hungaroring", 2018) + 'TeamRadio.jsonStream'
 resp = requests.get(url)
 print(resp.text)
+print(url)
+
 
 # print(r.decode64(resp, 1000))
 # print(url)
