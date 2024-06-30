@@ -5,6 +5,8 @@ import datetime
 import zlib
 import retrieve as r
 import base64
+import speech_recognition as sr
+import paths as p
 
 # #testing requests
 # URL = "https://livetiming.formula1.com/static/"
@@ -21,13 +23,15 @@ import base64
 # print(date)
 
 #testing different data streams
-url = r.find_session("Race", "Hungaroring", 2018) + 'TeamRadio.jsonStream'
+url = p.find_session("Race", "Spielberg", 2024) + 'Heartbeat.jsonStream'
 resp = requests.get(url)
 print(resp.text)
-print(url)
+
+# print(resp.text)
+# print(url)
 
 
-# print(r.decode64(resp, 1000))
+# print(r.decode64(resp, 5000))
 # print(url)
 
 # data = '7ed89990eb2a4d39870ff19793519937'
@@ -35,3 +39,13 @@ print(url)
 
 #row = resp.text.split('\r\n')[20]
 #print(row)
+
+#testing audio transcription
+# url = 'https://livetiming.formula1.com/static/2018/2018-07-29_Hungarian_Grand_Prix/2018-07-29_Race/TeamRadio/KIMRAI01_7_20180729_152713.mp3'
+# file = requests.get(url)
+# rec = sr.Recognizer()
+# audio_file = sr.AudioFile('radio.wav')
+# with audio_file as source:
+#     audio = rec.record(source)
+#     text = rec.recognize_google(audio)
+#     print(text)
