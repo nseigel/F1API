@@ -23,7 +23,7 @@ import paths as p
 # print(date)
 
 #testing different data streams
-url = p.find_session("Race", "Spielberg", 2024) + 'Heartbeat.jsonStream'
+url = p.find_session("Race", "Spielberg", 2024) + 'LapCount.jsonStream'
 resp = requests.get(url)
 print(resp.text)
 

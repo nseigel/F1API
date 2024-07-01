@@ -71,10 +71,14 @@ def get_lap_positions(year, circuit, session, driver, lap):
     end_index = find_time(times, laps.get_lap_start(session, circuit, year, lap + 1, driver))
     driver_x = []
     driver_y = []
+    utctimestamps = []
     for i in range(start_index, end_index + 1):
         for h in range(len(positions[i]["Position"])):
             x = positions[i]["Position"][h]['Entries'][l.drivers[driver]]['X']
             y = positions[i]["Position"][h]['Entries'][l.drivers[driver]]['Y']
+            utctimestamp = positions[i]["Position"][h]["Timestamp"]
+            utctimestamp = convert_time(utctimestamp)
+            utctimestamps.append(utctimestamp)
             driver_x.append(x)
             driver_y.append(y)
-    return(driver_x, driver_y)
+    return(driver_x, driver_y, utctimestamps)
