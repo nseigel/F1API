@@ -30,20 +30,11 @@ def get_distance_points(year, circuit, session, driver, lap):
         previous_point = [driver_x[i], driver_y[i], driver_z[i]]
     return(times, distances)
 
-def get_pol_function(x, y):
-    #plt.plot(x, y)
-    distance = P.fit(x, y, 30) # 14 is the degree of the polynomial
-    dx, dy = distance.linspace(100)  # generate 100 sample points on this graph
-    #plt.plot(dx, dy)  # plot the calculated polynomial
+def get_pol_functions(x, y):
+    distance = P.fit(x, y, 30)
     speed = P.deriv(distance)
-    sx, sy = speed.linspace(100)
-    for i in range(len(sy)):
-        sy[i] = sy[i] * 0.36
-    plt.plot(sx, sy)
     acc = P.deriv(speed)
-    ax, ay = acc.linspace(100)  
-    #plt.plot(ax, ay)
-
-    plt.show()
+    return(distance, speed, acc)
+    
 x, y = get_distance_points(2023, "Spa-Francorchamps", "Qualifying", "VER", 5)
-get_pol_function(x, y)
+get_pol_functions(x, y)
