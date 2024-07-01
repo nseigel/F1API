@@ -35,7 +35,7 @@ def draw_segment(year, circuit, session, start_time, end_time, driver_number, fa
         visualize_segment(driver_x, driver_y, timestamps)
 
 def draw_lap(session, circuit, year, lap_number, driver, factor, colour, turtle):
-    driver_x, driver_y, timestamps = r.get_lap_positions(year, circuit, session, driver, lap_number)
+    driver_x, driver_y, driver_z, timestamps = r.get_lap_positions(year, circuit, session, driver, lap_number)
     processed_data = n.normalize([driver_x, driver_y], factor)
     driver_x = processed_data[0]
     driver_y = processed_data[1]
