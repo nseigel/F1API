@@ -16,11 +16,14 @@ def manageKey(dict, keys):
 
 def splitTiming(rows):
     data = []
+    timings = []
     for row in rows:
-        timing, value = text.split('{', 1)
-        value = json.loads("{" + data)
+        split = row.split('{', 1)
+        timing = split[0]
+        value = json.loads('{' + split[1])
         data.append(value)
-    return data
+        timings.append(timing)
+    return timings, data
 
 def createCursor(path):
     url = path + "SessionInfo.jsonStream"
@@ -82,5 +85,26 @@ def saveContentStreams(path):
 
     cur.execute('CREATE TABLE ContentStreams(Type, Name, Language, Uri, Path, Utc)')
     cur.executemany('INSERT INTO ContentStreams VALUES(?, ?, ?, ?, ?, ?)', rows)
+    con.commit()
+    return cur, con
+
+def saveTrackStatus(path):
+    url = path + 'TrackStatus.jsonStream'
+    resp = requests.get(url)
+    entries = resp.text.split('\r\n')
+    del(entries[len(entries) - 1])
+    timing, data = splitTiming(entries)
+    
+    cur, con = createCursor(path)
+    rows = []
+
+    for i in range(len(timing)):
+        streamtiming = timing[i]
+        status, message = manageKey(data[i], ["Status", "Message"])
+        row = (streamtiming, status, message)
+        rows.append(row)
+
+    cur.execute('CREATE TABLE TrackStatus(Stream Timestamp, Status, Message)')
+    cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
     con.commit()
     return cur, con

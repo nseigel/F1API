@@ -23,7 +23,7 @@ import sqlite3
 # timestamps = r.get_position_data(2024, 'Spielberg', 'Race', 1, 5000, 5100)[3]
 # print(timestamps)
 
-# db.saveContentStreams(p.find_session("Race", 'Spielberg', 2024))
+# db.saveTrackStatus(p.find_session("Race", 'Spielberg', 2024))
 # cur, con = db.createCursor(p.find_session("Race", 'Spielberg', 2024))
-# for row in cur.execute("SELECT Type, Name, Language, Uri, Path, Utc FROM ContentStreams"):
+# for row in cur.execute("SELECT Stream Timestamp, Status, Message FROM TrackStatus"):
 #     print(row)
