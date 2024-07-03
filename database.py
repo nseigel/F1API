@@ -3,6 +3,11 @@ import paths as p
 import requests
 import json
 
+def splitTiming(text):
+    timing, data = text.split('{', 1)
+    data = json.loads("{" + data)
+    return data
+
 def createCursor(path):
     url = path + "SessionInfo.jsonStream"
     resp = requests.get(url)
@@ -19,8 +24,7 @@ def createCursor(path):
 def saveSessionInfo(path):
     url = path + "SessionInfo.jsonStream"
     resp = requests.get(url)
-    timing, data = resp.text.split('{', 1)
-    data = json.loads("{" + data)
+    data = splitTiming(resp.text)
 
     cur, con = createCursor(path)
 
@@ -31,5 +35,19 @@ def saveSessionInfo(path):
 
     cur.executemany('INSERT INTO SessionInfo VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', to_enter)
     con.commit()
-    return con
+    return cur, con
 
+def saveArchiveStatus(path):
+    url = path + 'ArchiveStatus.jsonStream'
+    resp = requests.get(url)
+    data = splitTiming(resp.text)
+    cur, con = createCursor(path)
+
+    cur.execute('CREATE TABLE ArchiveStatus(Status)')
+    to_enter = [
+        (data["Status"],)
+    ]
+
+    cur.executemany('INSERT INTO ArchiveStatus VALUES(?)', to_enter)
+    con.commit()
+    return cur, con

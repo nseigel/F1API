@@ -23,7 +23,7 @@ import sqlite3
 # timestamps = r.get_position_data(2024, 'Spielberg', 'Race', 1, 5000, 5100)[3]
 # print(timestamps)
 
-#db.saveSessionInfo(p.find_session("Race", 'Spielberg', 2024))
+# db.saveArchiveStatus(p.find_session("Race", 'Spielberg', 2024))
 cur, con = db.createCursor(p.find_session("Race", 'Spielberg', 2024))
-for row in cur.execute("SELECT Name, OfficialName, Location, Country, Circuit, SessionName, StartDate, EndDate, Path FROM SessionInfo"):
+for row in cur.execute("SELECT Status FROM ArchiveStatus"):
     print(row)
