@@ -36,9 +36,9 @@ def createCursor(path):
 
 
 def saveSessionInfo(path):
-    url = path + "SessionInfo.jsonStream"
+    url = path + "SessionInfo.json"
     resp = requests.get(url)
-    data = splitTiming(resp.text)[0]
+    data = json.loads(codecs.decode(resp.content, encoding='utf-8-sig'))
 
     cur, con = createCursor(path)
 
@@ -52,9 +52,9 @@ def saveSessionInfo(path):
     return cur, con
 
 def saveArchiveStatus(path):
-    url = path + 'ArchiveStatus.jsonStream'
+    url = path + 'ArchiveStatus.json'
     resp = requests.get(url)
-    data = splitTiming(resp.text)[0]
+    data = json.loads(codecs.decode(resp.content, encoding='utf-8-sig'))
     cur, con = createCursor(path)
 
     cur.execute('CREATE TABLE ArchiveStatus(Status)')
