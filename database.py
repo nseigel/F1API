@@ -88,23 +88,53 @@ def saveContentStreams(path):
     con.commit()
     return cur, con
 
-def saveTrackStatus(path):
-    url = path + 'TrackStatus.jsonStream'
+# def saveTrackStatus(path):
+#     url = path + 'TrackStatus.json'
+#     resp = requests.get(url)
+#     print(resp.text)
+#     entries = resp.text.split('\r\n')
+#     del(entries[len(entries) - 1])
+#     timing, data = splitTiming(entries)
+    
+#     cur, con = createCursor(path)
+#     rows = []
+
+#     for i in range(len(timing)):
+#         streamtiming = timing[i]
+#         status, message = manageKey(data[i], ["Status", "Message"])
+#         row = (streamtiming, status, message)
+#         rows.append(row)
+
+#     cur.execute('CREATE TABLE TrackStatus(Stream Timestamp, Status, Message)')
+#     cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
+#     con.commit()
+#     return cur, con
+
+def saveSessionData(path):
+    url = path + 'SessionData.json'
     resp = requests.get(url)
-    entries = resp.text.split('\r\n')
-    del(entries[len(entries) - 1])
-    timing, data = splitTiming(entries)
+    data = json.loads(codecs.decode(resp.content, encoding='utf-8-sig'))
     
     cur, con = createCursor(path)
-    rows = []
 
-    for i in range(len(timing)):
-        streamtiming = timing[i]
-        status, message = manageKey(data[i], ["Status", "Message"])
-        row = (streamtiming, status, message)
-        rows.append(row)
+    laps = data['Series']
+    lap_entries = []
+    for lap in laps:
+        utc, lap = manageKey(lap, ["Utc", 'Lap'])
+        lap_entry = (utc, lap)
+        lap_entries.append(lap_entry)
+    
+    statuses = data['StatusSeries']
+    status_entries = []
+    for status in statuses:
+        utc, track, session = manageKey(status, ['Utc', 'TrackStatus', 'SessionStatus'])
+        status_entry = (utc, track, session)
+        status_entries.append(status_entry)
 
-    cur.execute('CREATE TABLE TrackStatus(Stream Timestamp, Status, Message)')
-    cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
+    cur.execute('CREATE TABLE RaceLaps(Utc, Lap Number)')
+    cur.executemany('INSERT INTO RaceLaps VALUES(?, ?)', lap_entries)
     con.commit()
-    return cur, con
+
+    cur.execute('CREATE TABLE TrackSessionStatus(Utc, Track Status, Session Status)')
+    cur.executemany('INSERT INTO TrackSessionStatus VALUES(?, ?, ?)', status_entries)
+    con.commit()
