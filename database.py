@@ -3,6 +3,18 @@ import paths as p
 import requests
 import json
 import codecs
+import zlib
+import base64
+import datetime
+
+def convert_time(timestamp):
+    timestamp = timestamp[0:26]
+    timestamp = timestamp.replace('Z', '0')
+    while len(timestamp) < 26:
+        timestamp = timestamp + '0'
+    timestamp = timestamp + '+00:00'
+    time = datetime.datetime.fromisoformat(timestamp)
+    return time
 
 def manageKey(dict, keys):
     data = []
@@ -69,6 +81,89 @@ def saveArchiveStatus(path):
     con.commit()
     return cur, con
 
+def saveTrackStatus(path):
+    url = path + 'TrackStatus.jsonStream'
+    resp = requests.get(url)
+    entries = resp.text.split('\r\n')
+    del(entries[len(entries) - 1])
+    timing, data = splitTiming(entries)
+    
+    cur, con = createCursor(path)
+    rows = []
+
+    for i in range(len(timing)):
+        streamtiming = timing[i]
+        status, message = manageKey(data[i], ["Status", "Message"])
+        row = (streamtiming, status, message)
+        rows.append(row)
+
+    cur.execute('CREATE TABLE TrackStatus(Central, Status, Message)')
+    print(rows)
+    cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
+    con.commit()
+    return cur, con
+
+def saveSessionData(path):
+    url = path + 'SessionData.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    laprows = []
+    trackrows = []
+    sessionrows = []
+    index = 0
+    for entry in data:
+        try:
+            lap = entry['Series']
+            for key in lap:
+                utc = lap[key]['Utc']
+                lapnum = lap[key]['Lap']
+                row = (central[index], utc, lapnum)
+                laprows.append(row)
+        except KeyError:
+            pass
+
+        try: 
+            status = entry['StatusSeries']
+            for key in status:
+                if index == 0:
+                    trackstatus = status[0]['TrackStatus']
+                    utc = status[0]['Utc']
+                else:
+                    trackstatus = status[key]['TrackStatus']
+                    utc = status[key]['Utc']
+                row = (central[index], utc, trackstatus)
+                trackrows.append(row)
+        except KeyError:
+            pass
+
+        try: 
+            status = entry['StatusSeries']
+            for key in status:
+                if index == 0:
+                        sessionstatus = status[0]['SessionStatus']
+                        utc = status[0]['Utc']
+                else:
+                    sessionstatus = status[key]['SessionStatus']
+                    utc = status[key]['Utc']
+                row = (central[index], utc, sessionstatus)
+                sessionrows.append(row)
+        except KeyError:
+            pass
+        index += 1
+    
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE SessionLaps(Central, Utc, Lap)')
+    cur.execute('CREATE TABLE SessionTrackStatus(Central, Utc, TrackStatus)')
+    cur.execute('CREATE TABLE SessionStatus(Central, Utc, SessionStatus)')
+    cur.executemany('INSERT into SessionLaps VALUES(?, ?, ?)', laprows)
+    cur.executemany('INSERT into SessionTrackStatus VALUES(?, ?, ?)', trackrows)
+    cur.executemany('INSERT into SessionStatus VALUES(?, ?, ?)', sessionrows)
+    con.commit()
+
+    return cur, con
+
 def saveContentStreams(path):
     url = path + 'ContentStreams.json'
     resp = requests.get(url)
@@ -88,53 +183,164 @@ def saveContentStreams(path):
     con.commit()
     return cur, con
 
-# def saveTrackStatus(path):
-#     url = path + 'TrackStatus.json'
-#     resp = requests.get(url)
-#     print(resp.text)
-#     entries = resp.text.split('\r\n')
-#     del(entries[len(entries) - 1])
-#     timing, data = splitTiming(entries)
-    
-#     cur, con = createCursor(path)
-#     rows = []
-
-#     for i in range(len(timing)):
-#         streamtiming = timing[i]
-#         status, message = manageKey(data[i], ["Status", "Message"])
-#         row = (streamtiming, status, message)
-#         rows.append(row)
-
-#     cur.execute('CREATE TABLE TrackStatus(Stream Timestamp, Status, Message)')
-#     cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
-#     con.commit()
-#     return cur, con
-
-def saveSessionData(path):
-    url = path + 'SessionData.json'
+def saveAudioStreams(path):
+    url = path + 'AudioStreams.json'
     resp = requests.get(url)
     data = json.loads(codecs.decode(resp.content, encoding='utf-8-sig'))
     
     cur, con = createCursor(path)
 
-    laps = data['Series']
-    lap_entries = []
-    for lap in laps:
-        utc, lap = manageKey(lap, ["Utc", 'Lap'])
-        lap_entry = (utc, lap)
-        lap_entries.append(lap_entry)
+    streams = data['Streams']
+    rows = []
+    for stream in streams:
+        name, language, uri, path, utc = manageKey(stream, ["Name", "Language", "Uri", "Path", "Utc"])
+        row = (name, language, uri, path, utc)
+        rows.append(row)
+
+    cur.execute('CREATE TABLE AudioStreams(Name, Language, Uri, Path, Utc)')
+    cur.executemany('INSERT INTO AudioStreams VALUES(?, ?, ?, ?, ?)', rows)
+    con.commit()
+    return cur, con
+
+def saveChampionshipPrediction(path):
+    url = path + 'ChampionshipPrediction.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    driverrows = []
+    teamrows = []
+
+    index = 0
+    for entry in data:
+        for key in entry['Drivers']:
+            driver = key
+            time = central[index]
+            position, points = manageKey(entry['Drivers'][key], ['PredictedPosition', 'PredictedPoints'])
+            row = (time, driver, position, points)
+            driverrows.append(row)
+        try:
+            for key in entry['Teams']:
+                team = key
+                time = central[index]
+                position, points = manageKey(entry['Teams'][key], ['PredictedPosition', 'PredictedPoints'])
+                row = (time, team, position, points)
+                teamrows.append(row)
+        except KeyError:
+            pass
+        index += 1
+
+    cur, con = createCursor(path)
+    cur.execute("CREATE TABLE DriversChampionshipPrediction(Central, Driver, PredictedPosition, PredictedPoints)")
+    cur.execute("CREATE TABLE TeamsChampionshipPrediction(Central, Team, PredictedPosition, PredictedPoints)")
+    cur.executemany("INSERT INTO DriversChampionshipPrediction VALUES(?, ?, ?, ?)", driverrows)
+    cur.executemany("INSERT INTO TeamsChampionshipPrediction VALUES(?, ?, ?, ?)", teamrows)
+    con.commit()
+    return cur, con
+
+def savePosition(path):
+    url = path + 'Position.z.jsonStream'
+    resp = requests.get(url)
+    entries = resp.text.split('\r\n')
+    del(entries[len(entries) - 1])
     
-    statuses = data['StatusSeries']
-    status_entries = []
-    for status in statuses:
-        utc, track, session = manageKey(status, ['Utc', 'TrackStatus', 'SessionStatus'])
-        status_entry = (utc, track, session)
-        status_entries.append(status_entry)
-
-    cur.execute('CREATE TABLE RaceLaps(Utc, Lap Number)')
-    cur.executemany('INSERT INTO RaceLaps VALUES(?, ?)', lap_entries)
+    timings = []
+    data = []
+    for entry in entries:
+        timing, datum, _ = entry.split('"')
+        timings.append(timing)
+        data.append(json.loads(zlib.decompress(base64.b64decode(datum), -zlib.MAX_WBITS)))
+    
+    rows = []
+    for line in data:
+        for entry in line['Position']:
+            timestamp = entry['Timestamp']
+            for key in entry['Entries']:
+                time = timestamp
+                driver_number = key
+                status, x, y, z, = manageKey(entry['Entries'][key], ['Status', 'X', 'Y', 'Z'])
+                row = (time, driver_number, x, y, z)
+                rows.append(row)
+    
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE Positions(Timestamp, DriverNumber, X, Y, Z)')
+    cur.executemany('INSERT INTO Positions VALUES(?, ?, ?, ?, ?)', rows)
     con.commit()
 
-    cur.execute('CREATE TABLE TrackSessionStatus(Utc, Track Status, Session Status)')
-    cur.executemany('INSERT INTO TrackSessionStatus VALUES(?, ?, ?)', status_entries)
+    return cur, con
+
+#channel predictions
+#Zero: RPM
+#Two: speed
+#FortyFive: DRS
+#Three: Gear
+#Four: Throttle?
+#Five: Brakes?
+def saveCarData(path):
+    url = path + 'CarData.z.jsonStream'
+    resp = requests.get(url)
+    entries = resp.text.split('\r\n')
+    del(entries[len(entries) - 1])
+    
+    timings = []
+    data = []
+    for entry in entries:
+        timing, datum, _ = entry.split('"')
+        timings.append(timing)
+        data.append(json.loads(zlib.decompress(base64.b64decode(datum), -zlib.MAX_WBITS)))
+
+    rows = []
+    for line in data:
+        for entry in line['Entries']:
+            timestamp = entry['Utc']
+            for key in entry['Cars']:
+                driver_number = key
+                chan0, chan2, chan3, chan4, chan5, chan45 = manageKey(entry['Cars'][key]['Channels'], ['0', '2', '3', '4', '5', '45'])
+                row = (timestamp, driver_number, chan0, chan2, chan3, chan4, chan5, chan45)
+                rows.append(row)
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE CarData(Utc, DriverNumber, Zero, Two, Three, Four, Five, FortyFive)')
+    cur.executemany('INSERT INTO CarData VALUES(?, ?, ?, ?, ?, ?, ?, ?)', rows)
     con.commit()
+    
+    return cur, con
+
+def saveHeartbeat(path):
+    url = path + 'Heartbeat.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, utc = splitTiming(rows)
+    start = central[0]
+    end = central[len(central) - 1]
+    i = 0
+    while i < len(central):
+        if central[i] == start or central[i] == end:
+            del(central[i])
+            del(utc[i])
+        else:
+            i += 1
+    rows = []
+    for i in range(len(central)):
+        utc[i] = convert_time(utc[i]['Utc'])
+        row = (central[i], str(utc[i]))
+        rows.append(row)
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE Heartbeat(Central, Utc)')
+    cur.executemany("INSERT INTO Heartbeat VALUES(?, ?)", rows)
+    con.commit()
+    return cur, con
+
+def saveExtrapolatedClock(path):
+    url = path + 'ExtrapolatedClock.jsonStream'
+    resp = requests.get(url)
+    print(resp.text)
+
+def test(path):
+    url = path + 'ExtrapolatedClock.jsonStream'
+    resp = requests.get(url)
+    print(resp.text)
+    
+test(p.find_session("Race", 'Spielberg', 2024))

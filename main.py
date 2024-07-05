@@ -21,10 +21,17 @@ import sqlite3
 # timestamps = r.get_position_data(2024, 'Spielberg', 'Race', 1, 5000, 5100)[3]
 # print(timestamps)
 
-# db.saveSessionData(p.find_session("Race", 'Spielberg', 2024))
+# db.saveCarData(p.find_session("Race", 'Spielberg', 2024))
+# db.savePosition(p.find_session("Race", 'Spielberg', 2024))
+# db.saveSessionInfo(p.find_session("Race", 'Spielberg', 2024))
+#db.saveSessionData(p.find_session("Race", 'Spielberg', 2024))
+# db.saveHeartbeat(p.find_session("Race", 'Spielberg', 2024))
+#db.saveTrackStatus(p.find_session("Race", 'Spielberg', 2024))
+#db.saveAudioStreams(p.find_session("Race", 'Spielberg', 2024))
+#db.saveChampionshipPrediction(p.find_session("Race", 'Spielberg', 2024))
 # cur, con = db.createCursor(p.find_session("Race", 'Spielberg', 2024))
-# for row in cur.execute("SELECT Utc, Lap Number FROM RaceLaps"):
+# for row in cur.execute("SELECT Central, Tean, PredictedPosition, PredictedPoints FROM TeamsChampionshipPrediction"):
 #     print(row)
 
-# for row in cur.execute("SELECT Utc, Track Status, Session Status FROM TrackSessionStatus"):
+# for row in cur.execute("SELECT Central, Status, Message FROM TrackStatus"):
 #     print(row)

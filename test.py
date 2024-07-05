@@ -16,16 +16,26 @@ import paths as p
 # blah = response_Miami_2024.text
 # #print(blah)
 
-# #testing timestamp processing
-# date = '2024-03-02T14:20:35.019466Z'
-# date_utc = date.replace('Z', '+00:00')
-# date = datetime.datetime.fromisoformat(date_utc)
+#testing timestamp processing
+date = '2024-03-02T14:20:35.019466Z'
+date_utc = date.replace('Z', '+00:00')
+# print(date_utc)
+date = datetime.datetime.fromisoformat(date_utc)
 # print(date)
+# print(date.time())
+# correcttiming = date.time()
+timing = '2024-03-02T02:20:56.665000+00:00'
+#         2024-03-02T14:20:35.019466+00:00
+timing = datetime.datetime.fromisoformat(timing)
+print(timing)
+time_delta = date - timing
+timing = timing + time_delta
+print(timing)
 
 #testing different data streams
-url = p.find_session("Race", "Spielberg", 2024) + 'LapCount.jsonStream'
-resp = requests.get(url)
-print(resp.text)
+# url = p.find_session("Race", "Spielberg", 2024) + 'LapCount.jsonStream'
+# resp = requests.get(url)
+# print(resp.text)
 
 # print(resp.text)
 # print(url)
