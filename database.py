@@ -238,6 +238,29 @@ def saveChampionshipPrediction(path):
     con.commit()
     return cur, con
 
+def saveExtrapolatedClock(path):
+    url = path + 'ExtrapolatedClock.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    rows = []
+
+    index = 0
+    for entry in data:
+        utc, remaining, extrapolating = manageKey(entry, ['Utc', 'Remaining', 'Extrapolating'])
+        time = central[index]
+        row = (time, utc, remaining, extrapolating)
+        rows.append(row)
+        index += 1
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE ExtrapolatedClock(Central, Utc, Remaining, Extrapolating)')
+    cur.executemany("INSERT INTO ExtrapolatedClock VALUES(?, ?, ?, ?)", rows)
+    con.commit()
+
+    return cur, con
+
 def savePosition(path):
     url = path + 'Position.z.jsonStream'
     resp = requests.get(url)
@@ -252,19 +275,22 @@ def savePosition(path):
         data.append(json.loads(zlib.decompress(base64.b64decode(datum), -zlib.MAX_WBITS)))
     
     rows = []
+    index = 0
     for line in data:
         for entry in line['Position']:
             timestamp = entry['Timestamp']
+            central = timings[index]
             for key in entry['Entries']:
                 time = timestamp
                 driver_number = key
                 status, x, y, z, = manageKey(entry['Entries'][key], ['Status', 'X', 'Y', 'Z'])
-                row = (time, driver_number, x, y, z)
+                row = (central, time, driver_number, x, y, z)
                 rows.append(row)
+        index += 1
     
     cur, con = createCursor(path)
-    cur.execute('CREATE TABLE Positions(Timestamp, DriverNumber, X, Y, Z)')
-    cur.executemany('INSERT INTO Positions VALUES(?, ?, ?, ?, ?)', rows)
+    cur.execute('CREATE TABLE Positions(Central, Utc, DriverNumber, X, Y, Z)')
+    cur.executemany('INSERT INTO Positions VALUES(?, ?, ?, ?, ?, ?)', rows)
     con.commit()
 
     return cur, con
@@ -290,18 +316,21 @@ def saveCarData(path):
         data.append(json.loads(zlib.decompress(base64.b64decode(datum), -zlib.MAX_WBITS)))
 
     rows = []
+    index = 0
     for line in data:
         for entry in line['Entries']:
-            timestamp = entry['Utc']
+            central = timings[index]
+            utc = entry['Utc']
             for key in entry['Cars']:
                 driver_number = key
                 chan0, chan2, chan3, chan4, chan5, chan45 = manageKey(entry['Cars'][key]['Channels'], ['0', '2', '3', '4', '5', '45'])
-                row = (timestamp, driver_number, chan0, chan2, chan3, chan4, chan5, chan45)
+                row = (central, utc, driver_number, chan0, chan2, chan3, chan4, chan5, chan45)
                 rows.append(row)
+        index += 1
 
     cur, con = createCursor(path)
-    cur.execute('CREATE TABLE CarData(Utc, DriverNumber, Zero, Two, Three, Four, Five, FortyFive)')
-    cur.executemany('INSERT INTO CarData VALUES(?, ?, ?, ?, ?, ?, ?, ?)', rows)
+    cur.execute('CREATE TABLE CarData(Central, Utc, DriverNumber, Zero, Two, Three, Four, Five, FortyFive)')
+    cur.executemany('INSERT INTO CarData VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', rows)
     con.commit()
     
     return cur, con
@@ -333,14 +362,32 @@ def saveHeartbeat(path):
     con.commit()
     return cur, con
 
-def saveExtrapolatedClock(path):
-    url = path + 'ExtrapolatedClock.jsonStream'
+def saveLapCount(path):
+    url = path + 'LapCount.jsonStream'
     resp = requests.get(url)
-    print(resp.text)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+
+    rows = []
+    index = 0
+    for entry in data:
+        time = central[index]
+        current, total = manageKey(entry, ['CurrentLap', 'TotalLaps'])
+        row = (time, current, total)
+        rows.append(row)
+        index += 1
+    
+    cur, con = createCursor(path)
+    cur.execute("CREATE TABLE LapCount(Central, CurrentLap, TotalLaps)")
+    cur.executemany("INSERT INTO LapCount VALUES(?, ?, ?)", rows)
+    con.commit()
+
+    return cur, con
 
 def test(path):
-    url = path + 'ExtrapolatedClock.jsonStream'
+    url = path + 'LapCount.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-test(p.find_session("Race", 'Spielberg', 2024))
+#saveLapCount(p.find_session("Race", 'Spielberg', 2024))
