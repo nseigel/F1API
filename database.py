@@ -329,11 +329,88 @@ def saveCarData(path):
         index += 1
 
     cur, con = createCursor(path)
-    cur.execute('CREATE TABLE CarData(Central, Utc, DriverNumber, Zero, Two, Three, Four, Five, FortyFive)')
+    cur.execute('CREATE TABLE CarData(Central, Utc, DriverNumber, RPM, Speed, Gear, Throttle, Brake, DRS)')
     cur.executemany('INSERT INTO CarData VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', rows)
     con.commit()
     
     return cur, con
+
+def saveLapCount(path):
+    url = path + 'LapCount.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+
+    rows = []
+    index = 0
+    for entry in data:
+        time = central[index]
+        current, total = manageKey(entry, ['CurrentLap', 'TotalLaps'])
+        row = (time, current, total)
+        rows.append(row)
+        index += 1
+    
+    cur, con = createCursor(path)
+    cur.execute("CREATE TABLE LapCount(Central, CurrentLap, TotalLaps)")
+    cur.executemany("INSERT INTO LapCount VALUES(?, ?, ?)", rows)
+    con.commit()
+
+    return cur, con
+
+def saveDriverRaceInfo(path):
+    url = path + 'DriverRaceInfo.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+
+    rows = []
+    index = 0
+    for entry in data:
+        for key in entry:
+            driver_number = key
+            gap, interval, catching = manageKey(entry[key], ['Gap', 'Interval', 'Catching'])
+            time = central[index]
+            row = (time, driver_number, gap, interval, catching)
+            rows.append(row)
+        index += 1
+    
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE DriverRaceInfo(Central, Driver, Gap, Interval, Catching)')
+    cur.executemany("INSERT INTO DriverRaceInfo VALUES(?, ?, ?, ?, ?)", rows)
+    con.commit()
+    return cur, con
+
+def saveTyreStintSeries(path):
+    url = path + 'TyreStintSeries.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    
+    rows = []
+    index = 0
+    for entry in data:
+        for key in entry['Stints']:
+            try:
+                driver_number = key
+                time = central[index]
+                for stint in entry['Stints'][key]:
+                    stint_number = stint
+                    compound, new, tyresnotchanged, totallaps, startlaps = manageKey(entry["Stints"][key][stint], ["Compound", "New", 'TyresNotChanged', 'TotalLaps', 'StartLaps'])
+                    row = (time, driver_number, stint_number, compound, new, tyresnotchanged, totallaps, startlaps)
+                    rows.append(row)
+            except TypeError:
+                pass
+        index += 1
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE TyreStintSeries(Central, Driver, Stint, Compound, New, TyresNotChanged, TotalLaps, StartLaps)')
+    cur.executemany("INSERT INTO TyreStintSeries VALUES(?, ?, ?, ?, ?, ?, ?, ?)", rows)
+    con.commit()
+    return cur, con
+
 
 def saveHeartbeat(path):
     url = path + 'Heartbeat.jsonStream'
@@ -362,32 +439,9 @@ def saveHeartbeat(path):
     con.commit()
     return cur, con
 
-def saveLapCount(path):
-    url = path + 'LapCount.jsonStream'
-    resp = requests.get(url)
-    rows = resp.text.split('\r\n')
-    del(rows[len(rows) - 1])
-    central, data = splitTiming(rows)
-
-    rows = []
-    index = 0
-    for entry in data:
-        time = central[index]
-        current, total = manageKey(entry, ['CurrentLap', 'TotalLaps'])
-        row = (time, current, total)
-        rows.append(row)
-        index += 1
-    
-    cur, con = createCursor(path)
-    cur.execute("CREATE TABLE LapCount(Central, CurrentLap, TotalLaps)")
-    cur.executemany("INSERT INTO LapCount VALUES(?, ?, ?)", rows)
-    con.commit()
-
-    return cur, con
-
 def test(path):
-    url = path + 'LapCount.jsonStream'
+    url = path + 'TimingData.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-#saveLapCount(p.find_session("Race", 'Spielberg', 2024))
+test(p.find_session("Race", 'Spielberg', 2024))

@@ -21,7 +21,7 @@ import sqlite3
 # timestamps = r.get_position_data(2024, 'Spielberg', 'Race', 1, 5000, 5100)[3]
 # print(timestamps)
 
-#db.saveCarData(p.find_session("Race", 'Spielberg', 2024))
+#db.saveCarData(p.find_session("Race", 'Monza', 2023))
 #db.savePosition(p.find_session("Race", 'Spielberg', 2024))
 # db.saveSessionInfo(p.find_session("Race", 'Spielberg', 2024))
 #db.saveSessionData(p.find_session("Race", 'Spielberg', 2024))
@@ -31,8 +31,10 @@ import sqlite3
 #db.saveChampionshipPrediction(p.find_session("Race", 'Spielberg', 2024))
 #db.saveExtrapolatedClock(p.find_session("Race", 'Spielberg', 2024))
 #db.saveLapCount(p.find_session("Race", 'Spielberg', 2024))
+#db.saveDriverRaceInfo(p.find_session("Race", 'Spielberg', 2024))
+#db.saveTyreStintSeries(p.find_session("Race", 'Spielberg', 2024))
 # cur, con = db.createCursor(p.find_session("Race", 'Spielberg', 2024))
-# for row in cur.execute("SELECT Central, CurrentLap, TotalLaps FROM LapCount"):
+# for row in cur.execute("SELECT Central, Driver, Stint, Compound, New, TyresNotChanged, TotalLaps, StartLaps FROM TyreStintSeries WHERE Driver = '1'"):
 #     print(row)
 
 # for row in cur.execute("SELECT Central, Status, Message FROM TrackStatus"):
