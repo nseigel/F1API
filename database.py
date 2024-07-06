@@ -49,6 +49,22 @@ def createCursor(path):
     cur = con.cursor()
     return cur, con
 
+def saveName(session, circuit, year, path):
+    url = path + "SessionInfo.jsonStream"
+    resp = requests.get(url)
+    timing, data = resp.text.split('{', 1)
+    data = json.loads("{" + data)
+    session = data['Name']
+    db_name = session + '_' + path.split('/')[5] + '.db'
+    rows = [
+        (session, circuit, year, db_name),
+        ]
+    con = sqlite3.connect('db/SessionLookup.db')
+    cur = con.cursor()
+    #cur.execute('CREATE TABLE DbName(Session, Circuit, Year, DbName)')
+    cur.executemany('INSERT INTO DbName VALUES(?, ?, ?, ?)', rows)
+    con.commit()
+
 
 def saveSessionInfo(path):
     url = path + "SessionInfo.json"
@@ -98,7 +114,6 @@ def saveTrackStatus(path):
         rows.append(row)
 
     cur.execute('CREATE TABLE TrackStatus(Central, Status, Message)')
-    print(rows)
     cur.executemany('INSERT INTO TrackStatus VALUES(?, ?, ?)', rows)
     con.commit()
     return cur, con
@@ -439,9 +454,55 @@ def saveHeartbeat(path):
     con.commit()
     return cur, con
 
+def saveLapSeries(path):
+    url = path + 'LapSeries.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    del(rows[0])
+    central, data = splitTiming(rows)
+    
+    rows = []
+    index = 0
+    for entry in data:
+        time = central[index]
+        for key in entry:
+            driver = key
+            for lap in entry[key]['LapPosition']:
+                position = entry[key]['LapPosition'][lap]
+                row = (time, driver, lap, position)
+                rows.append(row)
+    
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE LapSeries(Central, Driver, Lap, Position)')
+    cur.executemany('INSERT INTO LapSeries VALUES(?, ?, ?, ?)', rows)
+    con.commit()
+
+    return cur, con
+
+def saveSession(session, circuit, year):
+    path = p.find_session(session, circuit, year)
+    saveName(session, circuit, year, path)
+    saveSessionInfo(path)
+    saveArchiveStatus(path)
+    saveTrackStatus(path)
+    saveSessionData(path)
+    saveContentStreams(path)
+    saveAudioStreams(path)
+    #saveChampionshipPrediction(path)
+    saveExtrapolatedClock(path)
+    savePosition(path)
+    saveCarData(path)
+    saveLapCount(path)
+    saveDriverRaceInfo(path)
+    saveTyreStintSeries(path)
+    saveHeartbeat(path)
+    saveLapSeries(path)
+
+
 def test(path):
-    url = path + 'TimingData.jsonStream'
+    url = path + 'LapSeries.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-test(p.find_session("Race", 'Spielberg', 2024))
+#test(p.find_session("Race", 'Spielberg', 2024))

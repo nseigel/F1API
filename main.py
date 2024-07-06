@@ -33,9 +33,13 @@ import sqlite3
 #db.saveLapCount(p.find_session("Race", 'Spielberg', 2024))
 #db.saveDriverRaceInfo(p.find_session("Race", 'Spielberg', 2024))
 #db.saveTyreStintSeries(p.find_session("Race", 'Spielberg', 2024))
+#db.saveLapSeries(p.find_session("Race", 'Spielberg', 2024))
+#db.saveName("Race", "Spielberg", 2024, p.find_session("Race", 'Spielberg', 2024))
 # cur, con = db.createCursor(p.find_session("Race", 'Spielberg', 2024))
-# for row in cur.execute("SELECT Central, Driver, Stint, Compound, New, TyresNotChanged, TotalLaps, StartLaps FROM TyreStintSeries WHERE Driver = '1'"):
+# for row in cur.execute("SELECT Driver, Lap FROM LapSeries"):
 #     print(row)
 
 # for row in cur.execute("SELECT Central, Status, Message FROM TrackStatus"):
 #     print(row)
+
+#db.saveSession('Race', 'Yas Marina Circuit', 2023)
