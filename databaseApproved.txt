@@ -4,4 +4,6 @@ ArchiveStatus
 TrackStatus
 SessionData
 ***consider combining sessiondata and track status (the track status part)
-everything up to lap count
+everything up to tyrestintseries
+add DRS specifiers (0, 1: off; 8: detected; 10, 12, 14: on; everything else: unknown)
+using timingdata (timingdataf1 very similar so not going to use)

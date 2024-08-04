@@ -55,13 +55,16 @@ def saveName(session, circuit, year, path):
     timing, data = resp.text.split('{', 1)
     data = json.loads("{" + data)
     session = data['Name']
-    db_name = session + '_' + path.split('/')[5] + '.db'
+    db_name = session + '_' + path.split('/')[5]
     rows = [
         (session, circuit, year, db_name),
         ]
     con = sqlite3.connect('db/SessionLookup.db')
     cur = con.cursor()
-    #cur.execute('CREATE TABLE DbName(Session, Circuit, Year, DbName)')
+    try:
+        cur.execute('CREATE TABLE DbName(Session, Circuit, Year, DbName)')
+    except sqlite3.OperationalError:
+        pass
     cur.executemany('INSERT INTO DbName VALUES(?, ?, ?, ?)', rows)
     con.commit()
 
@@ -228,12 +231,15 @@ def saveChampionshipPrediction(path):
 
     index = 0
     for entry in data:
-        for key in entry['Drivers']:
-            driver = key
-            time = central[index]
-            position, points = manageKey(entry['Drivers'][key], ['PredictedPosition', 'PredictedPoints'])
-            row = (time, driver, position, points)
-            driverrows.append(row)
+        try:
+            for key in entry['Drivers']:
+                driver = key
+                time = central[index]
+                position, points = manageKey(entry['Drivers'][key], ['PredictedPosition', 'PredictedPoints'])
+                row = (time, driver, position, points)
+                driverrows.append(row)
+        except KeyError:
+            pass
         try:
             for key in entry['Teams']:
                 team = key
@@ -499,10 +505,21 @@ def saveSession(session, circuit, year):
     saveHeartbeat(path)
     saveLapSeries(path)
 
+def saveTimingData(path):
+    url = path + 'TimingData.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    for row in data:
+        pass
+    
 
 def test(path):
-    url = path + 'LapSeries.jsonStream'
+    url = path + 'TimingDataF1.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-#test(p.find_session("Race", 'Spielberg', 2024))
+saveTimingData(p.find_session("Race", 'Spa-Francorchamps', 2024))
+
+# saveSession('Race', 'Spielberg', 2024)

@@ -35,6 +35,3 @@ def get_pol_functions(x, y):
     speed = P.deriv(distance)
     acc = P.deriv(speed)
     return(distance, speed, acc)
-    
-x, y = get_distance_points(2023, "Spa-Francorchamps", "Qualifying", "VER", 5)
-get_pol_functions(x, y)
