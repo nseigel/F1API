@@ -516,11 +516,20 @@ def saveTimingData(path):
     speedtraps = []
     bestlaptimes = []
     lastlaptimes = []
+    gaps = []
     index = 0
     for row in data:
         for driver in row['Lines']:
-            # gapLeader, numLaps, inPit, status = manageKey(row['Lines'][driver], ['GapToLeader', 'NumberOfLaps', 'InPit', 'Status'])
-            # interval, catching = manageKey(row['Lines'][driver]['IntervalToPositionAhead'], ['Value', 'Catching'])
+            gapLeader, numLaps, inPit, status = manageKey(row['Lines'][driver], ['GapToLeader', 'NumberOfLaps', 'InPit', 'Status'])
+            try:
+                interval, catching = manageKey(row['Lines'][driver]['IntervalToPositionAhead'], ['Value', 'Catching'])
+            except KeyError:
+                interval = None
+                catching = None
+            if interval == None and catching == None and gapLeader == None:
+                pass
+            else:
+                gaps.append([central[index], driver, gapLeader, interval, catching])
             try:
                 lastLapTime, personalFastest = manageKey(row['Lines'][driver]['LastLapTime'], ['Value', 'PersonalFastest'])
                 lastlaptimes.append([central[index], driver, lastLapTime, personalFastest])
@@ -553,6 +562,8 @@ def saveTimingData(path):
     cur.executemany('INSERT INTO BestLapTimes VALUES(?, ?, ?, ?)', bestlaptimes)
     cur.execute('CREATE TABLE LastLapTimes(Central, Driver, LastLapTime, PersonalFastest)')
     cur.executemany('INSERT INTO LastLapTimes VALUES(?, ?, ?, ?)', lastlaptimes)
+    cur.execute('CREATE TABLE Gaps(Central, Driver, GapToLeader, IntervalToPositionAhead, Catching)')
+    cur.executemany('INSERT INTO Gaps VALUES(?, ?, ?, ?, ?)', gaps)
     con.commit()
 
 #ADD SEGMENT DATA
