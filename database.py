@@ -511,15 +511,61 @@ def saveTimingData(path):
     rows = resp.text.split('\r\n')
     del(rows[len(rows) - 1])
     central, data = splitTiming(rows)
+    #print(data)
+    sectors = []
+    speedtraps = []
+    bestlaptimes = []
+    lastlaptimes = []
+    index = 0
     for row in data:
-        pass
-    
+        for driver in row['Lines']:
+            # gapLeader, numLaps, inPit, status = manageKey(row['Lines'][driver], ['GapToLeader', 'NumberOfLaps', 'InPit', 'Status'])
+            # interval, catching = manageKey(row['Lines'][driver]['IntervalToPositionAhead'], ['Value', 'Catching'])
+            try:
+                lastLapTime, personalFastest = manageKey(row['Lines'][driver]['LastLapTime'], ['Value', 'PersonalFastest'])
+                lastlaptimes.append([central[index], driver, lastLapTime, personalFastest])
+            except KeyError:
+                pass
+            try:
+                bestlaptime, lapnum = manageKey(row['Lines'][driver]['BestLapTime'], ['Value', 'Lap'])
+                bestlaptimes.append([central[index], driver, bestlaptime, lapnum])
+            except KeyError:
+                pass
+            # try:
+            #     for sector in row['Lines'][driver]['Sectors']:
+            #         sectorValue, personalFastest, previousValue = manageKey(row['Lines'][driver]['Sectors'][sector], ['Value', 'PersonalFastest', 'PreviousValue'])
+            #         sectors.append(central[index], driver, sector, sectorValue, personalFastest, previousValue)
+            # except KeyError:
+            #     pass
+            try:
+                for speed in row['Lines'][driver]['Speeds']:
+                    speedValue, personalFastest = manageKey(row['Lines'][driver]['Speeds'][speed], ['Value', 'PersonalFastest'])
+                    speedtraps.append([central[index], driver, speed, speedValue, personalFastest])
+            except KeyError:
+                pass
+
+        index += 1
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE SpeedTraps(Central, Driver, SpeedTrap, SpeedValue, PersonalFastest)')
+    cur.executemany('INSERT INTO SpeedTraps VALUES(?, ?, ?, ?, ?)', speedtraps)
+    cur.execute('CREATE TABLE BestLapTimes(Central, Driver, BestLapTime, LapNum)')
+    cur.executemany('INSERT INTO BestLapTimes VALUES(?, ?, ?, ?)', bestlaptimes)
+    cur.execute('CREATE TABLE LastLapTimes(Central, Driver, LastLapTime, PersonalFastest)')
+    cur.executemany('INSERT INTO LastLapTimes VALUES(?, ?, ?, ?)', lastlaptimes)
+    con.commit()
+
+#ADD SEGMENT DATA
+#ADD SECTOR DATA
+#ADD INTERVALS
+#ADD BESTLAPTIME
+
 
 def test(path):
     url = path + 'TimingDataF1.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-saveTimingData(p.find_session("Race", 'Spa-Francorchamps', 2024))
+#saveTimingData(p.find_session("Race", 'Spa-Francorchamps', 2024))
 
 # saveSession('Race', 'Spielberg', 2024)

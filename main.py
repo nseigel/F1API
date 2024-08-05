@@ -8,6 +8,15 @@ import matplotlib.pyplot as plt
 import normalise as n
 import functions as f
 
+#EXPLORING TABLES
+
+# cur, con = db.createCursor(p.find_session('Race', 'Spa-Francorchamps', '2024'))
+
+# for row in cur.execute("SELECT Central, LastLapTime, PersonalFastest FROM LastLapTimes WHERE Driver = '23'"):
+#     print(row)
+
+
+
 #GRAPHING CAR DATA
 # cur, con = db.createCursor(p.find_session('Race', 'Spa-Francorchamps', '2024'))
 
