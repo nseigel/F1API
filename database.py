@@ -611,12 +611,33 @@ def saveSession(session, circuit, year):
     saveHeartbeat(path)
     saveLapSeries(path)
 
+def saveTopThree(path):
+    url = path + 'TopThree.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    index = 0
+    tops = []
+    for entry in data:
+        try:
+            for driver in entry['Lines']:
+                diffAhead, diffLeader, lapTime = manageKey(entry['Lines'][driver], ['DiffToAhead', 'DiffToLeader', 'LapTime'])
+                tops.append([central[index], driver, diffAhead, diffLeader, lapTime])
+        except (KeyError, TypeError):
+            pass
+        index += 1
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE TopThree(Central, Driver, DiffToAhead, DiffToLeader, LapTime)')
+    cur.executemany('INSERT INTO TopThree VALUES(?, ?, ?, ?, ?)', tops)
+    con.commit()
+    #COLOUR DATA IN SECOND LINE
 
 def test(path):
-    url = path + 'DriverList.jsonStream'
+    url = path + 'TopThree.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-#saveDriverList(p.find_session("Race", 'Spa-Francorchamps', 2024))
+#saveTopThree(p.find_session("Race", 'Spa-Francorchamps', 2024))
 
 # saveSession('Race', 'Spielberg', 2024)

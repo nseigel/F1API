@@ -9,10 +9,10 @@ import normalise as n
 import functions as f
 
 #EXPLORING TABLES
-cur, con = db.createCursor(p.find_session('Race', 'Spa-Francorchamps', '2024'))
+# cur, con = db.createCursor(p.find_session('Race', 'Spa-Francorchamps', '2024'))
 
-for row in cur.execute("SELECT Central, Line Value FROM Lines WHERE Driver = '55'"):
-    print(row)
+# for row in cur.execute("SELECT Central, DiffToAhead, DiffToLeader FROM TopThree WHERE Driver = '2'"):
+#     print(row)
 
 
 
