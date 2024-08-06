@@ -511,16 +511,22 @@ def saveTimingData(path):
     rows = resp.text.split('\r\n')
     del(rows[len(rows) - 1])
     central, data = splitTiming(rows)
+
     #print(data)
+
     sectors = []
     speedtraps = []
     bestlaptimes = []
     lastlaptimes = []
+    pitstatuses = []
+    segments = []
     gaps = []
     index = 0
     for row in data:
         for driver in row['Lines']:
             gapLeader, numLaps, inPit, status = manageKey(row['Lines'][driver], ['GapToLeader', 'NumberOfLaps', 'InPit', 'Status'])
+            if inPit != None or status != None:
+                pitstatuses.append([central[index], driver, inPit, status])
             try:
                 interval, catching = manageKey(row['Lines'][driver]['IntervalToPositionAhead'], ['Value', 'Catching'])
             except KeyError:
@@ -540,12 +546,23 @@ def saveTimingData(path):
                 bestlaptimes.append([central[index], driver, bestlaptime, lapnum])
             except KeyError:
                 pass
-            # try:
-            #     for sector in row['Lines'][driver]['Sectors']:
-            #         sectorValue, personalFastest, previousValue = manageKey(row['Lines'][driver]['Sectors'][sector], ['Value', 'PersonalFastest', 'PreviousValue'])
-            #         sectors.append(central[index], driver, sector, sectorValue, personalFastest, previousValue)
-            # except KeyError:
-            #     pass
+            try:
+                for sector in row['Lines'][driver]['Sectors']:
+                    #SECTORS
+                    value, fastest = manageKey(row['Lines'][driver]['Sectors'][sector], ['Value', 'PersonalFastest'])
+                    if value != None and value != '':
+                        sectors.append([central[index], driver, sector, value, fastest])
+                    #SEGMENTS
+                    try:
+                        for segment in row['Lines'][driver]['Sectors'][sector]['Segments']:
+                            status = manageKey(row['Lines'][driver]['Sectors'][sector]['Segments'][segment], ['Status'])
+                            segments.append([central[index], driver, sector, segment, status[0]])
+                    except KeyError:
+                        pass
+
+            except (TypeError, KeyError):
+                pass
+
             try:
                 for speed in row['Lines'][driver]['Speeds']:
                     speedValue, personalFastest = manageKey(row['Lines'][driver]['Speeds'][speed], ['Value', 'PersonalFastest'])
@@ -564,12 +581,15 @@ def saveTimingData(path):
     cur.executemany('INSERT INTO LastLapTimes VALUES(?, ?, ?, ?)', lastlaptimes)
     cur.execute('CREATE TABLE Gaps(Central, Driver, GapToLeader, IntervalToPositionAhead, Catching)')
     cur.executemany('INSERT INTO Gaps VALUES(?, ?, ?, ?, ?)', gaps)
+    cur.execute('CREATE TABLE PitStatus(Central, Driver, InPit, Status)')
+    cur.executemany('INSERT INTO PitStatus VALUES(?, ?, ?, ?)', pitstatuses)
+    cur.execute('CREATE TABLE Sectors(Central, Driver, Sector, Value, PersonalFastest)')
+    cur.executemany('INSERT INTO Sectors VALUES(?, ?, ?, ?, ?)', sectors)
+    cur.execute('CREATE TABLE Segments(Central, Driver, Sector, Segment, Status)')
+    cur.executemany('INSERT INTO Segments VALUES(?, ?, ?, ?, ?)', segments)
     con.commit()
 
-#ADD SEGMENT DATA
-#ADD SECTOR DATA
-#ADD INTERVALS
-#ADD BESTLAPTIME
+    return cur, con
 
 
 def test(path):
