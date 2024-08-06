@@ -432,79 +432,6 @@ def saveTyreStintSeries(path):
     con.commit()
     return cur, con
 
-
-def saveHeartbeat(path):
-    url = path + 'Heartbeat.jsonStream'
-    resp = requests.get(url)
-    rows = resp.text.split('\r\n')
-    del(rows[len(rows) - 1])
-    central, utc = splitTiming(rows)
-    start = central[0]
-    end = central[len(central) - 1]
-    i = 0
-    while i < len(central):
-        if central[i] == start or central[i] == end:
-            del(central[i])
-            del(utc[i])
-        else:
-            i += 1
-    rows = []
-    for i in range(len(central)):
-        utc[i] = convert_time(utc[i]['Utc'])
-        row = (central[i], str(utc[i]))
-        rows.append(row)
-
-    cur, con = createCursor(path)
-    cur.execute('CREATE TABLE Heartbeat(Central, Utc)')
-    cur.executemany("INSERT INTO Heartbeat VALUES(?, ?)", rows)
-    con.commit()
-    return cur, con
-
-def saveLapSeries(path):
-    url = path + 'LapSeries.jsonStream'
-    resp = requests.get(url)
-    rows = resp.text.split('\r\n')
-    del(rows[len(rows) - 1])
-    del(rows[0])
-    central, data = splitTiming(rows)
-    
-    rows = []
-    index = 0
-    for entry in data:
-        time = central[index]
-        for key in entry:
-            driver = key
-            for lap in entry[key]['LapPosition']:
-                position = entry[key]['LapPosition'][lap]
-                row = (time, driver, lap, position)
-                rows.append(row)
-    
-    cur, con = createCursor(path)
-    cur.execute('CREATE TABLE LapSeries(Central, Driver, Lap, Position)')
-    cur.executemany('INSERT INTO LapSeries VALUES(?, ?, ?, ?)', rows)
-    con.commit()
-
-    return cur, con
-
-def saveSession(session, circuit, year):
-    path = p.find_session(session, circuit, year)
-    saveName(session, circuit, year, path)
-    saveSessionInfo(path)
-    saveArchiveStatus(path)
-    saveTrackStatus(path)
-    saveSessionData(path)
-    saveContentStreams(path)
-    saveAudioStreams(path)
-    #saveChampionshipPrediction(path)
-    saveExtrapolatedClock(path)
-    savePosition(path)
-    saveCarData(path)
-    saveLapCount(path)
-    saveDriverRaceInfo(path)
-    saveTyreStintSeries(path)
-    saveHeartbeat(path)
-    saveLapSeries(path)
-
 def saveTimingData(path):
     url = path + 'TimingData.jsonStream'
     resp = requests.get(url)
@@ -591,12 +518,105 @@ def saveTimingData(path):
 
     return cur, con
 
+def saveDriverList(path):
+    url = path + 'DriverList.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, data = splitTiming(rows)
+    
+    index = 0
+    lines = []
+    for entry in data:
+        for driver in entry:
+            line = manageKey(entry[driver], ['Line'])
+            lines.append([central[index], driver, line[0]])
+
+        index += 1
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE Lines(Central, Driver, Line)')
+    cur.executemany('INSERT INTO Lines VALUES(?, ?, ?)', lines)
+    con.commit()
+
+def saveHeartbeat(path):
+    url = path + 'Heartbeat.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    central, utc = splitTiming(rows)
+    start = central[0]
+    end = central[len(central) - 1]
+    i = 0
+    while i < len(central):
+        if central[i] == start or central[i] == end:
+            del(central[i])
+            del(utc[i])
+        else:
+            i += 1
+    rows = []
+    for i in range(len(central)):
+        utc[i] = convert_time(utc[i]['Utc'])
+        row = (central[i], str(utc[i]))
+        rows.append(row)
+
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE Heartbeat(Central, Utc)')
+    cur.executemany("INSERT INTO Heartbeat VALUES(?, ?)", rows)
+    con.commit()
+    return cur, con
+
+def saveLapSeries(path):
+    url = path + 'LapSeries.jsonStream'
+    resp = requests.get(url)
+    rows = resp.text.split('\r\n')
+    del(rows[len(rows) - 1])
+    del(rows[0])
+    central, data = splitTiming(rows)
+    
+    rows = []
+    index = 0
+    for entry in data:
+        time = central[index]
+        for key in entry:
+            driver = key
+            for lap in entry[key]['LapPosition']:
+                position = entry[key]['LapPosition'][lap]
+                row = (time, driver, lap, position)
+                rows.append(row)
+    
+    cur, con = createCursor(path)
+    cur.execute('CREATE TABLE LapSeries(Central, Driver, Lap, Position)')
+    cur.executemany('INSERT INTO LapSeries VALUES(?, ?, ?, ?)', rows)
+    con.commit()
+
+    return cur, con
+
+def saveSession(session, circuit, year):
+    path = p.find_session(session, circuit, year)
+    saveName(session, circuit, year, path)
+    saveSessionInfo(path)
+    saveArchiveStatus(path)
+    saveTrackStatus(path)
+    saveSessionData(path)
+    saveContentStreams(path)
+    saveAudioStreams(path)
+    #saveChampionshipPrediction(path)
+    saveExtrapolatedClock(path)
+    savePosition(path)
+    saveCarData(path)
+    saveLapCount(path)
+    saveDriverRaceInfo(path)
+    saveTyreStintSeries(path)
+    saveHeartbeat(path)
+    saveLapSeries(path)
+
 
 def test(path):
-    url = path + 'TimingDataF1.jsonStream'
+    url = path + 'DriverList.jsonStream'
     resp = requests.get(url)
     print(resp.text)
     
-#saveTimingData(p.find_session("Race", 'Spa-Francorchamps', 2024))
+#saveDriverList(p.find_session("Race", 'Spa-Francorchamps', 2024))
 
 # saveSession('Race', 'Spielberg', 2024)
