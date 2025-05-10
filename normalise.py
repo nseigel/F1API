@@ -1,6 +1,5 @@
 import info as l
 
-gard = 'foodod'
 def min_max_value(data):
     mins = []
     maxes = []
