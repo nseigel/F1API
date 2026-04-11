@@ -10,7 +10,7 @@ def find_meeting(circuit, year):
       key = l.circuits[circuit]
       meeting = {}
       for meet in resp['Meetings']:
-            if meet["Code"] == key:
+            if meet["Circuit"]["Key"] == key:
                   meeting = meet
       return meeting
 

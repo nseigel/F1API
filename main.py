@@ -40,7 +40,8 @@ import functions as f
 # plt.show()
 
 #GRAPHING PLOTS OF LAPS
-# cur, con = db.createCursor(p.find_session('Race', 'Suzuka', '2023'))
+# db.saveSession('Race', 'Spa-Francorchamps', '2024')
+# cur, con = db.createCursor(p.find_session('Race', 'Spa-Francorchamps', 2024))
 
 # rows = []
 # for row in cur.execute("SELECT X, Y FROM Positions WHERE DriverNumber = '1'"):
