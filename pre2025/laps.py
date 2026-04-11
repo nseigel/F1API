@@ -1,7 +1,7 @@
 import json
 import requests
 import paths as p
-import info
+import info as info
 
 def split(data):
     length = len(data)

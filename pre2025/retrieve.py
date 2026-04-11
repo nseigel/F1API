@@ -5,7 +5,7 @@ import datetime
 import requests
 import info as l
 import codecs
-import laps
+import laps as laps
 import paths as p
 
 def convert_time(timestamp):

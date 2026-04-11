@@ -24,3 +24,5 @@ def find_session(session, circuit, year):
             except KeyError:
                   print('KeyError')
       return path
+
+find_session('Race', 'Spa-Francorchamps', '2024')
